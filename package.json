@@ -20,7 +20,7 @@
     "lint": "TIMING=1 eslint --quiet --ext js,jsx,ts,tsx src examples",
     "prepare": "$npm_execpath run build"
   },
-  "repository": "zthxxx/react-dev-inspector",
+  "repository": "IvanLisz/react-dev-inspector",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
