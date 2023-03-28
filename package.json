@@ -1,5 +1,5 @@
 {
-  "name": "react-dev-inspector",
+  "name": "nukeit-react-inspector",
   "version": "1.8.4",
   "sideEffects": false,
   "description": "dev-tool for inspect react components and jump to local IDE for component code.",
@@ -20,7 +20,7 @@
     "lint": "TIMING=1 eslint --quiet --ext js,jsx,ts,tsx src examples",
     "prepare": "$npm_execpath run build"
   },
-  "repository": "IvanLisz/react-dev-inspector",
+  "repository": "IvanLisz/nukeit-react-inspector",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
