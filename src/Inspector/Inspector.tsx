@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import type { Fiber } from 'react-reconciler'
-import hotkeys, { KeyHandler } from 'hotkeys-js'
 import { setupHighlighter } from './utils/highlight'
 import {
   getElementCodeInfo,
-  gotoEditor,
   getElementInspect,
   CodeInfo,
 } from './utils/inspect'
@@ -24,15 +22,7 @@ export interface InspectParams {
 
 export type ElementHandler = (params: InspectParams) => void
 
-export const defaultHotKeys = ['control', 'shift', 'command', 'c']
-
 export interface InspectorProps {
-  /**
-   * inspector toggle hotkeys
-   *
-   * supported keys see: https://github.com/jaywcjlove/hotkeys#supported-keys
-   */
-  keys?: string[],
   onHoverElement?: ElementHandler,
   onClickElement?: ElementHandler,
   /**
@@ -43,15 +33,9 @@ export interface InspectorProps {
 
 export const Inspector: React.FC<InspectorProps> = (props) => {
   const {
-    keys,
     onHoverElement,
     onClickElement,
-    disableLaunchEditor,
-    children,
   } = props
-
-  // hotkeys-js params need string
-  const hotkey = (keys ?? defaultHotKeys).join('+')
 
   /** inspector tooltip overlay */
   const overlayRef = useRef<Overlay>()
@@ -105,53 +89,33 @@ export const Inspector: React.FC<InspectorProps> = (props) => {
 
   const handleClickElement = (element: HTMLElement) => {
     stopInspect()
-
     const codeInfo = getElementCodeInfo(element)
     const { fiber, name } = getElementInspect(element)
 
-    if (!disableLaunchEditor) gotoEditor(codeInfo)
     onClickElement?.({
       element,
       fiber,
       codeInfo,
       name,
     })
+
+    startInspect()
   }
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.onmessage = function (e) {
+        if (e.data === 'enableInspector') startInspect()
+        if (e.data === 'disableInspector') stopInspect()
+      }
+    }
+
     document.addEventListener('mousemove', recordMousePoint, true)
     return () => {
       document.removeEventListener('mousemove', recordMousePoint, true)
     }
   }, [])
 
-  useEffect(() => {
-    const handleHotKeys: KeyHandler = (event, handler) => {
-      if (handler.key === hotkey) {
-        overlayRef.current
-          ? stopInspect()
-          : startInspect()
 
-      } else if (handler.key === 'esc' && overlayRef.current) {
-        stopInspect()
-      }
-    }
-
-    // https://github.com/jaywcjlove/hotkeys
-    hotkeys(`${hotkey}, esc`, handleHotKeys)
-
-    /**
-     * @deprecated only for debug, will remove in next version
-     */
-    window.__REACT_DEV_INSPECTOR_TOGGLE__ = () => overlayRef.current
-      ? stopInspect()
-      : startInspect()
-
-    return () => {
-      hotkeys.unbind(`${hotkey}, esc`, handleHotKeys)
-      delete window.__REACT_DEV_INSPECTOR_TOGGLE__
-    }
-  }, [hotkey])
-
-  return (<>{children ?? null}</>)
+  return null
 }
